@@ -1,0 +1,6 @@
+[Unit]
+After=network.target
+Requires={{ snova_name }}-web.target {{ snova_name }}-workers.target {{ snova_name }}-redis.target
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,6 @@
+[Unit]
+After=network.target
+Wants={{ snova_name }}-redis-cache.service {{ snova_name }}-redis-queue.service
+
+[Install]
+WantedBy=multi-user.target
