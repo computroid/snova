@@ -1,0 +1,28 @@
+---
+- name: Setup production
+  become: yes
+  become_user: root
+  command: snova setup production {{ sparrow_user }} --yes
+  args:
+    chdir: '{{ snova_path }}'
+
+- name: Setup Sudoers
+  become: yes
+  become_user: root
+  command: snova setup sudoers {{ sparrow_user }}
+  args:
+    chdir: '{{ snova_path }}'
+
+- name: Set correct permissions on snova.log
+  file:
+    path: '{{ snova_path }}/logs/snova.log'
+    owner: '{{ sparrow_user }}'
+    group: '{{ sparrow_user }}'
+  become: yes
+  become_user: root
+
+- name: Restart the snova
+  command: snova restart
+  args:
+    chdir: '{{ snova_path }}'
+...

@@ -1,0 +1,39 @@
+---
+
+- hosts: localhost
+  become: yes
+  become_user: root
+  vars:
+    snova_repo_path: "/Users/{{ ansible_user_id }}/.snova"
+    snova_path: "/Users/{{ ansible_user_id }}/sparrow-snova"
+  tasks:
+    # install pre-requisites
+    - name: install prequisites
+      homebrew:
+        name:
+          - cmake
+          - redis
+          - mariadb
+          - nodejs
+        state: present
+
+    # install wkhtmltopdf
+    - name: cask installs
+      homebrew_cask:
+        name:
+          - wkhtmltopdf
+        state: present
+
+    - name: configure mariadb
+      include_tasks: roles/mariadb/tasks/main.yml
+      vars:
+        mysql_conf_tpl: roles/mariadb/files/mariadb_config.cnf
+
+    # setup sparrow-snova
+    - include_tasks: includes/setup_snova.yml
+
+    # setup development environment
+    - include_tasks: includes/setup_dev_env.yml
+      when: not production
+
+...

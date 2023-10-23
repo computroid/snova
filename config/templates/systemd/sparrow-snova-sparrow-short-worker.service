@@ -1,0 +1,12 @@
+[Unit]
+Description="{{ snova_name }}-sparrow-short-worker %I"
+PartOf={{ snova_name }}-workers.target
+
+[Service]
+User={{ user }}
+Group={{ user }}
+Restart=always
+ExecStart={{ snova_cmd }} worker --queue short
+StandardOutput=file:{{ snova_dir }}/logs/worker.log
+StandardError=file:{{ snova_dir }}/logs/worker.error.log
+WorkingDirectory={{ snova_dir }}

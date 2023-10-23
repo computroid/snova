@@ -1,0 +1,48 @@
+---
+# This is the master playbook that deploys the whole Sparrow and SHOPPER stack
+
+- hosts: localhost
+  become: yes
+  become_user: root
+  roles:
+    - { role: common,            tags: common                                               }
+    - { role: locale,            tags: locale                                               }
+    - { role: mariadb,           tags: mariadb                                              }
+    - { role: nodejs,            tags: nodejs                                               }
+    - { role: swap,              tags: swap,             when: production and not container }
+    - { role: logwatch,          tags: logwatch,         when: production                   }
+    - { role: bash_screen_wall,  tags: bash_screen_wall, when: production                   }
+    - { role: sparrow_selinux,    tags: sparrow_selinux,   when: production                   }
+    - { role: dns_caching,       tags: dns_caching,      when: production                   }
+    - { role: ntpd,              tags: ntpd,             when: production                   }
+    - { role: wkhtmltopdf,       tags: wkhtmltopdf                                          }
+    - { role: psutil,            tags: psutil                                               }
+    - { role: redis,             tags: redis                                                }
+    - { role: supervisor,        tags: supervisor,       when: production                   }
+    - { role: nginx,             tags: nginx,            when: production                   }
+    - { role: fail2ban,          tags: fail2ban,         when: production                   }
+  tasks:
+    - name: Set hostname
+      hostname: name='{{ hostname }}'
+      when: hostname is defined and production
+
+    - name: Start NTPD
+      service: name=ntpd state=started
+      when: ansible_distribution == 'CentOS' and production
+
+    - name: Start NTPD
+      service: name=ntp state=started
+      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu' and production
+
+    - include_tasks: macosx.yml
+      when: ansible_distribution == 'MacOSX'
+
+- name: setup snova and dev environment
+  hosts: localhost
+  vars:
+    snova_repo_path: "{{ user_directory }}/.snova"
+    snova_path: "{{ user_directory }}/{{ snova_name }}"
+  roles:
+  # setup sparrow-snova
+    - { role: snova, tags: "snova", when: not run_travis and not without_snova_setup }
+...
